@@ -64,13 +64,9 @@ export const checkBudgetAlert = async (req, res) => {
     const totalSpent = total[0]?.totalSpent || 0;
 
     const budget = await Budget.findOne({ userId, category });
-    if (!budget) {
-      return res
-        .status(404)
-        .json({ message: "No budget set for this category." });
-    }
 
-    const percent = (totalSpent / budget.monthlyLimit) * 100;
+    const monthlyLimit = budget?.monthlyLimit ?? 15000;
+    const percent = (totalSpent / monthlyLimit) * 100;
 
     let alert = null;
     if (percent >= 100) {
@@ -83,9 +79,10 @@ export const checkBudgetAlert = async (req, res) => {
       category,
       month,
       totalSpent,
-      monthlyLimit: budget.monthlyLimit,
+      monthlyLimit,
       percentageUsed: percent.toFixed(2),
       alert,
+      isDefault: !budget,
     });
   } catch (error) {
     console.error("Budget Alert Error:", error);
